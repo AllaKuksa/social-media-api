@@ -23,9 +23,7 @@ def profile_media_file_path(instance, filename):
 
 class Profile(models.Model):
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="profiles"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles"
     )
     biography = models.TextField()
     profile_picture = models.ImageField(null=True, upload_to=profile_image_file_path)
@@ -41,6 +39,7 @@ class Profile(models.Model):
 
     class Meta:
         ordering = ["full_name"]
+        verbose_name_plural = "profiles"
 
 
 class Follow(models.Model):
@@ -69,19 +68,17 @@ class Post(models.Model):
         FITNESS = "Fitness"
         FOOD = "Food"
 
-    author = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name="posts"
-    )
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="posts")
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     media = models.ImageField(null=True, upload_to=profile_media_file_path)
     hashtag = models.CharField(max_length=50, choices=HashtagChoices.choices)
 
     class Meta:
-        ordering = ["created_at"]
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return self.content
+        return f"Post by {self.author} with content: {self.content}"
 
 
 class Comment(models.Model):
@@ -93,9 +90,20 @@ class Comment(models.Model):
     commented_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["commented_at"]
+        ordering = ["-commented_at"]
 
     def __str__(self):
-        return self.content
+        return f"Comment by {self.author} at {self.commented_at}"
 
 
+class Like(models.Model):
+    author = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="likes")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    liked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["profile", "post"]
+        ordering = ["-liked_at"]
+
+    def __str__(self):
+        return f"Like by {self.author} at {self.liked_at}"
