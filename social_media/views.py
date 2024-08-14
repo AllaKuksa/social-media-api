@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 
 from social_media.models import Profile
 from social_media.permissions import IsAdminOrIsAuthenticated
-from social_media.serializers import ProfileSerializer, ProfileImageSerializer
+from social_media.serializers import ProfileSerializer, ProfileImageSerializer, DetailedProfileSerializer, ProfileListSerializer
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -32,5 +32,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "upload_image":
             return ProfileImageSerializer
+        if self.action == "retrieve":
+            return DetailedProfileSerializer
+        if self.action == "list":
+            return ProfileListSerializer
         return ProfileSerializer
 
