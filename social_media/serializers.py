@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from social_media.models import Profile
+from social_media.models import Profile, Follow
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -11,10 +11,11 @@ class ProfileSerializer(serializers.ModelSerializer):
             "user",
             "first_name",
             "last_name",
+            "full_name",
             "biography",
             "profile_picture",
             "phone_number",
-            "birth_date"
+            "birth_date",
         ]
         read_only_fields = ["user"]
 
@@ -25,7 +26,7 @@ class ProfileImageSerializer(serializers.ModelSerializer):
         fields = ["id", "profile_picture"]
 
 
-class DetailedProfileSerializer(ProfileSerializer):
+class ProfileDetailedSerializer(ProfileSerializer):
     email = serializers.EmailField(source="user.email")
 
     class Meta:
@@ -34,11 +35,12 @@ class DetailedProfileSerializer(ProfileSerializer):
             "id",
             "first_name",
             "last_name",
+            "full_name",
             "biography",
             "profile_picture",
             "email",
             "phone_number",
-            "birth_date"
+            "birth_date",
         ]
 
 
@@ -47,8 +49,48 @@ class ProfileListSerializer(ProfileSerializer):
         model = Profile
         fields = [
             "id",
-            "user",
             "first_name",
             "last_name",
             "profile_picture",
+        ]
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = Follow
+        fields = [
+            "id",
+            "follower",
+            "following",
+            "created_at"
+        ]
+
+
+class FollowListSerializer(FollowSerializer):
+    follower_full_name = serializers.CharField(source='follower.full_name')
+    following_full_name = serializers.CharField(source='following.full_name')
+
+    class Meta:
+        model = Follow
+        fields = [
+            "id",
+            "follower_full_name",
+            "following_full_name",
+            "created_at"
+        ]
+
+
+class FollowDetailSerializer(FollowSerializer):
+    follower = ProfileDetailedSerializer(read_only=True)
+    following = ProfileDetailedSerializer(read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = [
+            "id",
+            "follower",
+            "following",
+            "created_at"
         ]

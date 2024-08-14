@@ -2,9 +2,17 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from social_media.models import Profile
+from social_media.models import Profile, Follow
 from social_media.permissions import IsAdminOrIsAuthenticated
-from social_media.serializers import ProfileSerializer, ProfileImageSerializer, DetailedProfileSerializer, ProfileListSerializer
+from social_media.serializers import (
+    ProfileSerializer,
+    ProfileImageSerializer,
+    ProfileDetailedSerializer,
+    ProfileListSerializer,
+    FollowSerializer,
+    FollowListSerializer,
+    FollowDetailSerializer,
+)
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -18,8 +26,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         methods=["POST"],
         detail=True,
         permission_classes=[IsAdminOrIsAuthenticated],
-        url_path="upload-image"
-
+        url_path="upload-image",
     )
     def upload_images(self, request, pk=None):
         profile = self.get_object()
@@ -33,8 +40,20 @@ class ProfileViewSet(viewsets.ModelViewSet):
         if self.action == "upload_image":
             return ProfileImageSerializer
         if self.action == "retrieve":
-            return DetailedProfileSerializer
+            return ProfileDetailedSerializer
         if self.action == "list":
             return ProfileListSerializer
         return ProfileSerializer
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    queryset = Follow.objects.all().select_related("follower", "following")
+    permission_classes = [IsAdminOrIsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FollowListSerializer
+        if self.action == "retrieve":
+            return FollowDetailSerializer
+        return FollowSerializer
 
