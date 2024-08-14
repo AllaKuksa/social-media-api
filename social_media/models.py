@@ -83,3 +83,19 @@ class Post(models.Model):
     def __str__(self):
         return self.content
 
+
+class Comment(models.Model):
+    author = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name="comments"
+    )
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    content = models.TextField()
+    commented_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["commented_at"]
+
+    def __str__(self):
+        return self.content
+
+
