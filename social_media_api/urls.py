@@ -20,9 +20,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path(
-        "api/social_media_api/",
-        include("social_media_api.urls", namespace="social_media_api"),
-    ),
-    path("api/user/", include("social_media_api.user.urls", namespace="user")),
+    # path(
+    #     "api/social_media_api/",
+    #     include("social_media_api.urls", namespace="social_media_api"),
+    # ),
+    # path("api/user/", include("social_media_api.user.urls", namespace="user")),
 ]
