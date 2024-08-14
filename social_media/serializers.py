@@ -17,3 +17,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "birth_date"
         ]
         read_only_fields = ["user"]
+
+
+class ProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["id", "profile_picture"]
