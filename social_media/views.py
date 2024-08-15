@@ -1,3 +1,4 @@
+from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -61,9 +62,20 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         parameters=[
-
+            OpenApiParameter(
+                name="first_name",
+                type=OpenApiTypes.STR,
+                description="Filtering by first name",
+            ),
+            OpenApiParameter(
+                name="last_name",
+                type=OpenApiTypes.STR,
+                description="Filtering by last name",
+            )
         ]
     )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class FollowViewSet(viewsets.ModelViewSet):
