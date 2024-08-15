@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from social_media.models import Profile, Follow, Post
+from social_media.models import Profile, Follow, Post, Comment
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -112,7 +112,50 @@ class PostSerializer(serializers.ModelSerializer):
         ]
 
 
-class PostMediaSerializer(serializers.ModelSerializer):
+class PostMediaSerializer(PostSerializer):
     class Meta:
         model = Post
         fields = ["id", "media"]
+
+
+class PostListSerializer(PostSerializer):
+    class Meta:
+        model = Post
+        fields = [
+            "author",
+            "content",
+            "created_at",
+            "hashtag",
+        ]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    commented_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = Comment
+        fields = [
+            "id",
+            "post",
+            "author",
+            "content",
+            "commented_at"
+        ]
+
+
+class CommentListSerializer(CommentSerializer):
+    author = serializers.CharField(source="author.full_name")
+    post = PostListSerializer(read_only=True)
+
+
+class CommentDetailSerializer(CommentSerializer):
+    post = PostSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = [
+            "id",
+            "post",
+            "content",
+            "commented_at"
+        ]

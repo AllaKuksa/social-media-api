@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from social_media.models import Profile, Follow, Post
+from social_media.models import Profile, Follow, Post, Comment
 from social_media.permissions import IsAdminOrIsAuthenticated
 from social_media.serializers import (
     ProfileSerializer,
@@ -13,7 +13,7 @@ from social_media.serializers import (
     FollowListSerializer,
     FollowDetailSerializer,
     PostSerializer,
-    PostMediaSerializer,
+    PostMediaSerializer, CommentSerializer, CommentListSerializer, CommentDetailSerializer
 )
 
 
@@ -81,3 +81,14 @@ class PostViewSet(viewsets.ModelViewSet):
         if self.action == "upload_image":
             return PostMediaSerializer
         return PostSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all().select_related("author__user", "post__author__user")
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CommentListSerializer
+        if self.action == "retrieve":
+            return CommentDetailSerializer
+        return CommentSerializer
