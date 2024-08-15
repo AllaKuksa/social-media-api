@@ -13,6 +13,7 @@ from social_media.serializers import (
     FollowListSerializer,
     FollowDetailSerializer,
     PostSerializer,
+    PostMediaSerializer,
 )
 
 
@@ -60,5 +61,23 @@ class FollowViewSet(viewsets.ModelViewSet):
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().select_related("author")
-    serializer_class = PostSerializer
+    queryset = Post.objects.all().select_related("author__user")
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        permission_classes=[IsAdminOrIsAuthenticated],
+        url_path="upload-image",
+    )
+    def upload_images(self, request, pk=None):
+        post = self.get_object()
+        serializer = self.get_serializer(post, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_serializer_class(self):
+        if self.action == "upload_image":
+            return PostMediaSerializer
+        return PostSerializer

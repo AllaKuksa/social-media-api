@@ -110,3 +110,9 @@ class PostSerializer(serializers.ModelSerializer):
             "media",
             "hashtag"
         ]
+
+
+class PostMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ["id", "media"]
