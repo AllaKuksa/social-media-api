@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from social_media.models import Profile, Follow, Post, Comment
 from social_media.permissions import IsAdminOrIsAuthenticated
@@ -46,6 +47,23 @@ class ProfileViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return ProfileListSerializer
         return ProfileSerializer
+
+    def get_queryset(self):
+        first_name = self.request.query_params.get("first_name")
+        last_name = self.request.query_params.get("last_name")
+        queryset = self.queryset
+
+        if first_name:
+            queryset = queryset.filter(first_name__icontains=first_name)
+        if last_name:
+            queryset = queryset.filter(last_name__icontains=last_name)
+        return queryset.distinct()
+
+    @extend_schema(
+        parameters=[
+
+        ]
+    )
 
 
 class FollowViewSet(viewsets.ModelViewSet):
