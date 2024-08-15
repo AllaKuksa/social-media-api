@@ -17,7 +17,7 @@ from social_media.serializers import (
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.all().select_related("user")
     permission_classes = [IsAdminOrIsAuthenticated]
 
     def perform_create(self, serializer):
@@ -48,7 +48,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(viewsets.ModelViewSet):
-    queryset = Follow.objects.all().select_related("follower", "following")
+    queryset = Follow.objects.all().select_related("follower__user", "following__user")
     permission_classes = [IsAdminOrIsAuthenticated]
 
     def get_serializer_class(self):
