@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from social_media.models import Profile, Follow
+from social_media.models import Profile, Follow, Post
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -93,4 +93,20 @@ class FollowDetailSerializer(FollowSerializer):
             "follower",
             "following",
             "created_at"
+        ]
+
+
+class PostSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
+    author = serializers.CharField(source="author.full_name")
+
+    class Meta:
+        model = Post
+        fields = [
+            "id",
+            "author",
+            "content",
+            "created_at",
+            "media",
+            "hashtag"
         ]

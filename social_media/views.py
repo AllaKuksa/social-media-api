@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from social_media.models import Profile, Follow
+from social_media.models import Profile, Follow, Post
 from social_media.permissions import IsAdminOrIsAuthenticated
 from social_media.serializers import (
     ProfileSerializer,
@@ -12,6 +12,7 @@ from social_media.serializers import (
     FollowSerializer,
     FollowListSerializer,
     FollowDetailSerializer,
+    PostSerializer,
 )
 
 
@@ -57,3 +58,7 @@ class FollowViewSet(viewsets.ModelViewSet):
             return FollowDetailSerializer
         return FollowSerializer
 
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all().select_related("author")
+    serializer_class = PostSerializer
