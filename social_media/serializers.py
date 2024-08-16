@@ -101,7 +101,7 @@ class ProfileListSerializer(ProfileSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
-    author = serializers.CharField(source="author.full_name")
+    author = serializers.CharField(source="author.full_name", read_only=True)
 
     class Meta:
         model = Post

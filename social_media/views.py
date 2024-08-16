@@ -102,9 +102,16 @@ class PostViewSet(viewsets.ModelViewSet):
             return PostMediaSerializer
         return PostSerializer
 
+    def perform_create(self, serializer):
+        profile = Profile.objects.get(user=self.request.user)
+        serializer.save(author=profile)
+
     def get_queryset(self):
+        user = self.request.user.profiles
+        following_profiles = Follow.objects.filter(follower=user).values_list("following", flat=True)
+        queryset = Post.objects.filter(author__in=list(following_profiles) + [user])
+
         hashtag = self.request.query_params.get("hashtag")
-        queryset = self.queryset
 
         if hashtag:
             queryset = queryset.filter(hashtag__icontains=hashtag)
