@@ -102,6 +102,14 @@ class PostViewSet(viewsets.ModelViewSet):
             return PostMediaSerializer
         return PostSerializer
 
+    def get_queryset(self):
+        hashtag = self.request.query_params.get("hashtag")
+        queryset = self.queryset
+
+        if hashtag:
+            queryset = queryset.filter(hashtag__icontains=hashtag)
+        return queryset.distinct()
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all().select_related("author__user", "post__author__user")

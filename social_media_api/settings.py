@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    # "rest_framework_simplejwt.token_blacklist"
     "debug_toolbar",
     "drf_spectacular",
     "social_media",
