@@ -1,8 +1,12 @@
+from pickle import FALSE
+
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from social_media.models import Profile, Follow, Post, Comment
 from social_media.permissions import IsAdminOrIsAuthenticated
@@ -11,11 +15,9 @@ from social_media.serializers import (
     ProfileImageSerializer,
     ProfileDetailedSerializer,
     ProfileListSerializer,
-    FollowSerializer,
-    FollowListSerializer,
-    FollowDetailSerializer,
     PostSerializer,
-    PostMediaSerializer, CommentSerializer, CommentListSerializer, CommentDetailSerializer
+    PostMediaSerializer, CommentSerializer, CommentListSerializer, CommentDetailSerializer, FollowSerializer,
+    FollowingSerializer, FollowerSerializer
 )
 
 
@@ -78,18 +80,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class FollowViewSet(viewsets.ModelViewSet):
-    queryset = Follow.objects.all().select_related("follower__user", "following__user")
-    permission_classes = [IsAdminOrIsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return FollowListSerializer
-        if self.action == "retrieve":
-            return FollowDetailSerializer
-        return FollowSerializer
-
-
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().select_related("author__user")
 
@@ -122,3 +112,30 @@ class CommentViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return CommentDetailSerializer
         return CommentSerializer
+
+
+class FollowViewSet(viewsets.ModelViewSet):
+    queryset = Follow.objects.all().select_related("follower", "following")
+    permission_classes = [IsAdminOrIsAuthenticated]
+    serializer_class = FollowSerializer
+
+
+class FollowingsViewSet(ReadOnlyModelViewSet):
+    serializer_class = FollowingSerializer
+    permission_classes = [IsAdminOrIsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.profiles.followings.all()
+
+
+class FollowersViewSet(ReadOnlyModelViewSet):
+    serializer_class = FollowerSerializer
+    permission_classes = [IsAdminOrIsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return user.profiles.followers.all()
+
+
+
