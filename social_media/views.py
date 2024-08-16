@@ -1,8 +1,5 @@
-from pickle import FALSE
-
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status
-from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -16,8 +13,14 @@ from social_media.serializers import (
     ProfileDetailedSerializer,
     ProfileListSerializer,
     PostSerializer,
-    PostMediaSerializer, CommentSerializer, CommentListSerializer, CommentDetailSerializer, FollowSerializer,
-    FollowingSerializer, FollowerSerializer
+    PostMediaSerializer,
+    CommentSerializer,
+    CommentListSerializer,
+    CommentDetailSerializer,
+    FollowSerializer,
+    FollowingSerializer,
+    FollowerSerializer,
+    FollowListSerializer
 )
 
 
@@ -73,7 +76,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
                 name="last_name",
                 type=OpenApiTypes.STR,
                 description="Filtering by last name",
-            )
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -108,7 +111,9 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user.profiles
-        following_profiles = Follow.objects.filter(follower=user).values_list("following", flat=True)
+        following_profiles = Follow.objects.filter(follower=user).values_list(
+            "following", flat=True
+        )
         queryset = Post.objects.filter(author__in=list(following_profiles) + [user])
 
         hashtag = self.request.query_params.get("hashtag")
@@ -119,7 +124,9 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all().select_related("author__user", "post__author__user")
+    queryset = Comment.objects.all().select_related(
+        "author__user", "post__author__user"
+    )
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -132,7 +139,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 class FollowViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all().select_related("follower", "following")
     permission_classes = [IsAdminOrIsAuthenticated]
-    serializer_class = FollowSerializer
+
+    def get_serializer_class(self):
+        if self.action in ("list", "retrieve"):
+            return FollowListSerializer
+        return FollowSerializer
 
 
 class FollowingsViewSet(ReadOnlyModelViewSet):
@@ -151,6 +162,3 @@ class FollowersViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return user.profiles.followers.all()
-
-
-

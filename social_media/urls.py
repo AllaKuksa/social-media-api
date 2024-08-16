@@ -1,6 +1,13 @@
 from rest_framework import routers
 from django.urls import path, include
-from social_media.views import ProfileViewSet, PostViewSet, CommentViewSet, FollowViewSet, FollowersViewSet, FollowingsViewSet
+from social_media.views import (
+    ProfileViewSet,
+    PostViewSet,
+    CommentViewSet,
+    FollowViewSet,
+    FollowersViewSet,
+    FollowingsViewSet,
+)
 
 router = routers.DefaultRouter()
 

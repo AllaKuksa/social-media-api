@@ -33,11 +33,7 @@ class FollowingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = [
-            "profile_id",
-            "first_name",
-            "last_name"
-        ]
+        fields = ["profile_id", "first_name", "last_name"]
 
 
 class FollowerSerializer(serializers.ModelSerializer):
@@ -47,23 +43,20 @@ class FollowerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = [
-            "profile_id",
-            "first_name",
-            "last_name"
-        ]
+        fields = ["profile_id", "first_name", "last_name"]
 
 
 class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = [
-            "id",
-            "follower",
-            "following",
-            "created_at"
-        ]
+        fields = ["id", "follower", "following", "created_at"]
+
+
+class FollowListSerializer(FollowSerializer):
+    follower = serializers.CharField(source="follower.full_name")
+    following = serializers.CharField(source="following.full_name")
+    created_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
 
 
 class ProfileDetailedSerializer(ProfileSerializer):
@@ -105,14 +98,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = [
-            "id",
-            "author",
-            "content",
-            "created_at",
-            "media",
-            "hashtag"
-        ]
+        fields = ["id", "author", "content", "created_at", "media", "hashtag"]
 
 
 class PostMediaSerializer(PostSerializer):
@@ -137,13 +123,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = [
-            "id",
-            "post",
-            "author",
-            "content",
-            "commented_at"
-        ]
+        fields = ["id", "post", "author", "content", "commented_at"]
 
 
 class CommentListSerializer(CommentSerializer):
@@ -156,9 +136,4 @@ class CommentDetailSerializer(CommentSerializer):
 
     class Meta:
         model = Comment
-        fields = [
-            "id",
-            "post",
-            "content",
-            "commented_at"
-        ]
+        fields = ["id", "post", "content", "commented_at"]
