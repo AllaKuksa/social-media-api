@@ -3,7 +3,6 @@ from django.urls import path, include
 from social_media.views import (
     ProfileViewSet,
     PostViewSet,
-    CommentViewSet,
     FollowViewSet,
     FollowersViewSet,
     FollowingsViewSet,
@@ -13,8 +12,6 @@ router = routers.DefaultRouter()
 
 router.register("profiles", ProfileViewSet)
 router.register("posts", PostViewSet)
-router.register("comments", CommentViewSet)
-router.register("follows", FollowViewSet)
 router.register("my_followers", FollowersViewSet, basename="followers")
 router.register("my_followings", FollowingsViewSet, basename="followings")
 

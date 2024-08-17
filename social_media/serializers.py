@@ -47,6 +47,7 @@ class FollowerSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
+    follower = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Follow
@@ -92,13 +93,28 @@ class ProfileListSerializer(ProfileSerializer):
         ]
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ["id", "content", "commented_at", "author"]
+
+
 class PostSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
     author = serializers.CharField(source="author.full_name", read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Post
-        fields = ["id", "author", "content", "created_at", "media", "hashtag"]
+        fields = [
+            "id",
+            "author",
+            "content",
+            "created_at",
+            "media",
+            "hashtag",
+            "comments",
+        ]
 
 
 class PostMediaSerializer(PostSerializer):
@@ -111,6 +127,7 @@ class PostListSerializer(PostSerializer):
     class Meta:
         model = Post
         fields = [
+            "id",
             "author",
             "content",
             "created_at",
@@ -118,34 +135,9 @@ class PostListSerializer(PostSerializer):
         ]
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    commented_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
-
-    class Meta:
-        model = Comment
-        fields = ["id", "post", "author", "content", "commented_at"]
-
-
-class CommentListSerializer(CommentSerializer):
-    author = serializers.CharField(source="author.full_name")
-    post = PostListSerializer(read_only=True)
-
-
-class CommentDetailSerializer(CommentSerializer):
-    post = PostSerializer(read_only=True)
-
-    class Meta:
-        model = Comment
-        fields = ["id", "post", "content", "commented_at"]
-
-
 class LikeSerializer(serializers.ModelSerializer):
     liked_by = serializers.CharField(source="author.user")
 
     class Meta:
         model = Post
-        fields = [
-            "id",
-            "liked_by"
-        ]
-
+        fields = ["id", "liked_by"]

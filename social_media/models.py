@@ -49,10 +49,10 @@ class Profile(models.Model):
 
 class Follow(models.Model):
     follower = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name="followers"
+        Profile, on_delete=models.CASCADE, related_name="followings"
     )
     following = models.ForeignKey(
-        Profile, on_delete=models.CASCADE, related_name="followings"
+        Profile, on_delete=models.CASCADE, related_name="followers"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
