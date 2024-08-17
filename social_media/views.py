@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from social_media.models import Profile, Follow, Post, Comment
+from social_media.models import Profile, Follow, Post, Comment, Like
 from social_media.permissions import IsAdminOrIsAuthenticated
 from social_media.serializers import (
     ProfileSerializer,
@@ -20,7 +20,7 @@ from social_media.serializers import (
     FollowSerializer,
     FollowingSerializer,
     FollowerSerializer,
-    FollowListSerializer
+    FollowListSerializer, LikeSerializer
 )
 
 
@@ -100,6 +100,52 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(
+        methods=["POST", "GET"],
+        detail=True,
+        permission_classes=[IsAdminOrIsAuthenticated],
+        url_path="liked"
+    )
+    def like(self, request, pk=None):
+        post = self.get_object()
+        profile = Profile.objects.get(user=self.request.user)
+
+        if Like.objects.filter(author=profile, post=post).exists():
+            return Response({"You already liked this post"})
+
+        like = Like.objects.create(author=profile, post=post)
+        serializer = LikeSerializer(like)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(
+        methods=["POST", "GET"],
+        detail=True,
+        permission_classes=[IsAdminOrIsAuthenticated],
+        url_path="unliked"
+    )
+    def unliked(self, request, pk=None):
+        post = self.get_object()
+        profile = Profile.objects.get(user=self.request.user)
+
+        like = Like.objects.filter(author=profile, post=post)
+        if like.exists():
+            like.delete()
+            return Response({"You unliked this post"})
+        return Response({"You haven't liked this post"})
+
+    @action(
+        methods=["GET"],
+        detail=False,
+        permission_classes=[IsAdminOrIsAuthenticated],
+        url_path="liked_posts"
+    )
+    def liked_post(self, request):
+        profile = Profile.objects.get(user=self.request.user)
+        liked_posts = profile.likes.select_related("post__author__user")
+        queryset = Post.objects.filter(pk__in=liked_posts)
+        serializer = PostSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def get_serializer_class(self):
         if self.action == "upload_image":
             return PostMediaSerializer
@@ -114,7 +160,7 @@ class PostViewSet(viewsets.ModelViewSet):
         following_profiles = Follow.objects.filter(follower=user).values_list(
             "following", flat=True
         )
-        queryset = Post.objects.filter(author__in=list(following_profiles) + [user])
+        queryset = Post.objects.filter(author__in=list(following_profiles) + [user]).select_related("author__user")
 
         hashtag = self.request.query_params.get("hashtag")
 
