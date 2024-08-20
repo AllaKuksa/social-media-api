@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from social_media.models import Profile, Follow, Post, Comment, Like
+from social_media.models import Profile, Follow, Post, Comment
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -83,6 +83,9 @@ class ProfileDetailedSerializer(ProfileSerializer):
 
 
 class ProfileListSerializer(ProfileSerializer):
+    followers_count = serializers.IntegerField(read_only=True)
+    followings_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Profile
         fields = [
@@ -90,19 +93,33 @@ class ProfileListSerializer(ProfileSerializer):
             "first_name",
             "last_name",
             "profile_picture",
+            "followers_count",
+            "followings_count",
         ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    commented_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
+    author = serializers.CharField(source="author.full_name", read_only=True)
+
     class Meta:
         model = Comment
-        fields = ["id", "content", "commented_at", "author"]
+        fields = ["id", "post", "content", "commented_at", "author"]
+
+
+class CommentListSerializer(CommentSerializer):
+    post_id = serializers.IntegerField(source="post.id", read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "post_id", "content", "commented_at", "author"]
 
 
 class PostSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True, format="%Y-%m-%d %H:%M:%S")
     author = serializers.CharField(source="author.full_name", read_only=True)
-    comments = CommentSerializer(many=True, read_only=True)
+    comments = CommentListSerializer(many=True, read_only=True)
+    quantity_of_likes = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Post
@@ -114,6 +131,7 @@ class PostSerializer(serializers.ModelSerializer):
             "media",
             "hashtag",
             "comments",
+            "quantity_of_likes",
         ]
 
 
@@ -124,6 +142,8 @@ class PostMediaSerializer(PostSerializer):
 
 
 class PostListSerializer(PostSerializer):
+    quantity_of_comments = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Post
         fields = [
@@ -132,6 +152,8 @@ class PostListSerializer(PostSerializer):
             "content",
             "created_at",
             "hashtag",
+            "quantity_of_likes",
+            "quantity_of_comments",
         ]
 
 

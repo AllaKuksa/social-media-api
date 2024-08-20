@@ -1,3 +1,4 @@
+from django.db.models import Count
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
@@ -5,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.viewsets import ReadOnlyModelViewSet
+
 
 from social_media.models import Profile, Follow, Post, Comment, Like
 from social_media.permissions import IsAdminOrIsAuthenticated
@@ -21,6 +23,8 @@ from social_media.serializers import (
     FollowListSerializer,
     LikeSerializer,
     PostListSerializer,
+    CommentSerializer,
+    CommentListSerializer,
 )
 
 
@@ -89,7 +93,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         first_name = self.request.query_params.get("first_name")
         last_name = self.request.query_params.get("last_name")
-        queryset = self.queryset
+        queryset = self.queryset.annotate(
+            followers_count=Count("followers"), followings_count=Count("followings")
+        )
 
         if first_name:
             queryset = queryset.filter(first_name__icontains=first_name)
@@ -116,7 +122,35 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().select_related("author__user")
+    queryset = (
+        Post.objects.all()
+        .select_related("author__user")
+        .prefetch_related("comments", "likes")
+    )
+
+    def perform_create(self, serializer):
+        profile = Profile.objects.get(user=self.request.user)
+        serializer.save(author=profile)
+
+    def get_queryset(self):
+        user = self.request.user.profiles
+        following_profiles = Follow.objects.filter(follower=user).values_list(
+            "following", flat=True
+        )
+        queryset = (
+            Post.objects.filter(author__in=list(following_profiles) + [user])
+            .select_related("author__user")
+            .prefetch_related("comments", "likes")
+            .annotate(
+                quantity_of_likes=Count("likes"), quantity_of_comments=Count("comments")
+            )
+        )
+
+        hashtag = self.request.query_params.get("hashtag")
+
+        if hashtag:
+            queryset = queryset.filter(hashtag__icontains=hashtag)
+        return queryset.distinct()
 
     @action(
         methods=["POST"],
@@ -185,25 +219,6 @@ class PostViewSet(viewsets.ModelViewSet):
             return PostListSerializer
         return PostSerializer
 
-    def perform_create(self, serializer):
-        profile = Profile.objects.get(user=self.request.user)
-        serializer.save(author=profile)
-
-    def get_queryset(self):
-        user = self.request.user.profiles
-        following_profiles = Follow.objects.filter(follower=user).values_list(
-            "following", flat=True
-        )
-        queryset = Post.objects.filter(
-            author__in=list(following_profiles) + [user]
-        ).select_related("author__user")
-
-        hashtag = self.request.query_params.get("hashtag")
-
-        if hashtag:
-            queryset = queryset.filter(hashtag__icontains=hashtag)
-        return queryset.distinct()
-
 
 class FollowViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all().select_related("follower", "following")
@@ -234,3 +249,16 @@ class FollowersViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return user.profiles.followers.all()
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all().select_related("author", "post")
+    permission_classes = [IsAdminOrIsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user.profiles)
+
+    def get_serializer_class(self):
+        if self.action in ("list", "retrieve"):
+            return CommentListSerializer
+        return CommentSerializer
