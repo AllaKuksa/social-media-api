@@ -11,7 +11,6 @@ from .tasks import create_post
 from social_media.permissions import IsOwnerOrReadOnly
 
 from social_media.models import Profile, Follow, Post, Comment, Like
-from social_media.permissions import IsAdminOrIsAuthenticated
 from social_media.serializers import (
     ProfileSerializer,
     ProfileImageSerializer,
@@ -32,7 +31,7 @@ from social_media.serializers import (
 
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all().select_related("user")
-    permission_classes = [IsAdminOrIsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -40,7 +39,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
     @action(
         methods=["POST"],
         detail=True,
-        permission_classes=[IsAdminOrIsAuthenticated],
+        permission_classes=[IsAuthenticated],
         url_path="upload-image",
     )
     def upload_images(self, request, pk=None):
@@ -54,7 +53,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
     @action(
         methods=["POST", "GET"],
         detail=True,
-        permission_classes=[IsAdminOrIsAuthenticated],
+        permission_classes=[IsAuthenticated],
         url_path="follow",
     )
     def follow(self, request, pk=None):
@@ -70,7 +69,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
     @action(
         methods=["POST", "GET"],
         detail=True,
-        permission_classes=[IsAdminOrIsAuthenticated],
+        permission_classes=[IsAuthenticated],
         url_path="unfollow",
     )
     def unfollow(self, request, pk=None):
@@ -166,7 +165,7 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(
         methods=["POST"],
         detail=True,
-        permission_classes=[IsAdminOrIsAuthenticated],
+        permission_classes=[IsAuthenticated],
         url_path="upload-image",
     )
     def upload_images(self, request, pk=None):
@@ -180,7 +179,7 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(
         methods=["POST", "GET"],
         detail=True,
-        permission_classes=[IsAdminOrIsAuthenticated],
+        permission_classes=[IsAuthenticated],
         url_path="liked",
     )
     def like(self, request, pk=None):
@@ -197,7 +196,7 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(
         methods=["POST", "GET"],
         detail=True,
-        permission_classes=[IsAdminOrIsAuthenticated],
+        permission_classes=[IsAuthenticated],
         url_path="unliked",
     )
     def unliked(self, request, pk=None):
@@ -213,7 +212,7 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(
         methods=["GET"],
         detail=False,
-        permission_classes=[IsAdminOrIsAuthenticated],
+        permission_classes=[IsAuthenticated],
         url_path="liked_posts",
     )
     def liked_post(self, request):
@@ -233,7 +232,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
 class FollowViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all().select_related("follower", "following")
-    permission_classes = [IsAdminOrIsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -246,7 +245,7 @@ class FollowViewSet(viewsets.ModelViewSet):
 
 class FollowingsViewSet(ReadOnlyModelViewSet):
     serializer_class = FollowingSerializer
-    permission_classes = [IsAdminOrIsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -255,7 +254,7 @@ class FollowingsViewSet(ReadOnlyModelViewSet):
 
 class FollowersViewSet(ReadOnlyModelViewSet):
     serializer_class = FollowerSerializer
-    permission_classes = [IsAdminOrIsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
