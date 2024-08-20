@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db.models import Count
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from .tasks import create_post
 
 
 from social_media.models import Profile, Follow, Post, Comment, Like
@@ -129,8 +131,16 @@ class PostViewSet(viewsets.ModelViewSet):
     )
 
     def perform_create(self, serializer):
-        profile = Profile.objects.get(user=self.request.user)
-        serializer.save(author=profile)
+        schedule_in = self.request.data.get("scheduled_in")
+
+        if schedule_in:
+            validated_data = serializer.validated_data
+            validated_data["author_id"] = self.request.user.id
+
+            create_post.apply_async(args=[validated_data], eta=schedule_in)
+        else:
+            profile = Profile.objects.get(user=self.request.user)
+            serializer.save(author=profile)
 
     def get_queryset(self):
         user = self.request.user.profiles

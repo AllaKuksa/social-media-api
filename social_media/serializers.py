@@ -120,7 +120,9 @@ class PostSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="author.full_name", read_only=True)
     comments = CommentListSerializer(many=True, read_only=True)
     quantity_of_likes = serializers.IntegerField(read_only=True)
-    scheduled_in = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    scheduled_in = serializers.DateTimeField(
+        format="%Y-%m-%d %H:%M", required=False, write_only=True
+    )
 
     class Meta:
         model = Post
