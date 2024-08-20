@@ -91,6 +91,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     media = models.ImageField(null=True, blank=True, upload_to=profile_media_file_path)
     hashtag = models.CharField(max_length=50, choices=HashtagChoices.choices)
+    scheduled_in = models.DateTimeField(null=True, blank=True, default=None)
 
     class Meta:
         ordering = ["-created_at"]

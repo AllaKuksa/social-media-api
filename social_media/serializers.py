@@ -120,6 +120,7 @@ class PostSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="author.full_name", read_only=True)
     comments = CommentListSerializer(many=True, read_only=True)
     quantity_of_likes = serializers.IntegerField(read_only=True)
+    scheduled_in = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = Post
@@ -132,6 +133,7 @@ class PostSerializer(serializers.ModelSerializer):
             "hashtag",
             "comments",
             "quantity_of_likes",
+            "scheduled_in",
         ]
 
 
@@ -151,6 +153,7 @@ class PostListSerializer(PostSerializer):
             "author",
             "content",
             "created_at",
+            "scheduled_in",
             "hashtag",
             "quantity_of_likes",
             "quantity_of_comments",
