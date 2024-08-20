@@ -1,8 +1,6 @@
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
-
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from social_media.permissions import IsOwnerOrReadOnly
 from user.serializers import UserSerializer
 
 
@@ -11,10 +9,9 @@ class CreateUserView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 
-class ManageUserView(generics.RetrieveUpdateAPIView):
+class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
-    # authentication_classes = (JWTAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_object(self):
         return self.request.user

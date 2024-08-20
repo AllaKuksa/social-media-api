@@ -1,14 +1,14 @@
-from datetime import datetime
 from django.db.models import Count
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from .tasks import create_post
-
+from social_media.permissions import IsOwnerOrReadOnly
 
 from social_media.models import Profile, Follow, Post, Comment, Like
 from social_media.permissions import IsAdminOrIsAuthenticated
@@ -129,6 +129,7 @@ class PostViewSet(viewsets.ModelViewSet):
         .select_related("author__user")
         .prefetch_related("comments", "likes")
     )
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
 
     def perform_create(self, serializer):
         schedule_in = self.request.data.get("scheduled_in")
@@ -263,7 +264,7 @@ class FollowersViewSet(ReadOnlyModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all().select_related("author", "post")
-    permission_classes = [IsAdminOrIsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user.profiles)
