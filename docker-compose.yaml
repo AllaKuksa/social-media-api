@@ -1,0 +1,60 @@
+services:
+  social_media:
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./:/app
+      - my_media:/files/media
+    command: >
+      sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16.0-alpine3.17
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - my-db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: "redis:6-alpine"
+    ports:
+      - "6379:6379"
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "celery -A social_media_api worker -l info"
+    depends_on:
+      - redis
+      - social_media
+      - db
+    restart: on-failure
+    env_file:
+      - .env
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    command: "celery -A social_media_api flower --address=0.0.0.0"
+    depends_on:
+      - celery
+    env_file:
+      - .env
+
+volumes:
+  my-db:
+  my_media:
