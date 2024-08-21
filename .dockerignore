@@ -1,0 +1,11 @@
+.idea/
+.vscode/
+*.iml
+.pytest_cache/
+**__pycache__/
+**db.sqlite3
+media
+.venv
+README.md
+Dockerfile
+.env.sample

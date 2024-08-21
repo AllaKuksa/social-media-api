@@ -39,29 +39,19 @@ ___
  - Use appropriate permissions and authentication classes to implement API permissions.
  - Follow best practices for RESTful API design and documentation.
 ___
+## How to run
+
 1. `git clone https://github.com/AllaKuksa/social-media-api.git`
 2. `python -m venv venv`
 3. `source venv/bin/activate`
-4. `pip install -r requirements.txt`
-5. Set the following environment variables:
-   SECRET_KEY=<your secret key> in .env file
-6. `python manage.py makemigrations`
-7. `python manage.py migrate`
-8.  `python manage.py runserver`
+4. `copy .env.sample -> .env and populate with all required data`
+5. `docker-compose up --build`
 
 ## Getting access
 
  - `create user  /api/user/register/`
  - `get access token  /api/user/token/`
  - `logout  /api/user/logout/`
-
-## Post creation using Celery with broker Redis
-
- - `docker run -d -p 6379:6379 redis`
- - `celery -A social_media_api worker --loglevel=INFO`
-
-## Run Flower
- - `celery --broker=amqp://guest:guest@localhost:5672// flower`
 
 ## API Swagger
  - `/api/schema/swagger-ui/`
